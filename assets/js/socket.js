@@ -64,6 +64,7 @@ channel.join()
 export default socket
 
 let messagesContainer = $("#messages");
+let messagesContainer2 = $("#reward");
 
 // Charts
 var ctx = document.getElementById('myChart').getContext('2d');
@@ -78,23 +79,20 @@ var chart = new Chart(ctx, {
     data: {
         labels: [],
         datasets: [{
-            label: "val",
-            backgroundColor: 'rgb(255, 99, 132)',
-            borderColor: 'rgb(255, 99, 132)',
+            label: "Time taken to mine (microseconds)",
+            backgroundColor: 'rgb(255,0, 0)',
+            borderColor: 'rgb(0, 255, 0)',
             data: [],
         }]
     },
 
     // Configuration options go here
-    options: {}
+    options: {
+
+        
+    }
 });
 
-function updateScale(chart) {
-  chart.options.scales.xAxes[0] = {
-      type: 'linear'
-  }
-  chart.update();
-}
 
   function addData(chart,label, data) {
       chart.data.labels.push(label);
@@ -109,9 +107,14 @@ function updateScale(chart) {
 // });
 
 let a = 1
+let b = 0;
+let c = 0;
 
 channel.on("new_message", payload => {
-  // messagesContainer.append(`<br/>  ${payload.node}`)
-  addData(chart,a,payload.value)
+  b = b + payload.transacted_amt;
+  c= c + payload.rew;  
+  messagesContainer.html(`Total bitcoins transacted : ${b}`)
+  messagesContainer2.html(`Total bitcoins mined : ${c}`)
+  addData(chart,a,payload.time_taken)
   a= a + 1
 })

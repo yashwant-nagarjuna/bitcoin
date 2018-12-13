@@ -37,6 +37,17 @@
 </section>
 -->
 
-<div id= "messages"> </div>
+<%# <style>
+body{
+  background: #222a2a;
+  font-family: 'Roboto Mono' , 'monospace';
+  color: #ffffff
+
+}
+</style> %>
+
+
 <canvas id="myChart"></canvas>
+<div id= "messages" ></div>
+<div id = "reward" ></div>
 

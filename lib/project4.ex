@@ -59,7 +59,7 @@ defmodule Project4 do
       # IO.puts "after..."
       # IO.puts "user 1 balance : #{get_acc_balance(getID(a),block_chain)}"
       # IO.puts "user 2 balance : #{get_acc_balance(getID(b),block_chain)}"
-      start_bitcoin(pids,table,block_chain,iterator)
+      start_bitcoin(pids,table,block_chain,iterator-1)
     end
   end
 
@@ -151,7 +151,7 @@ defmodule Project4 do
     last_block = get_last_block(block_chain)
     new_transac = %Transaction{from: "0", to: pub, amount: Enum.random(3..5) , timestamp: to_string(DateTime.utc_now())}
     new_list = transac_list ++ [new_transac]
-    thisBlock = %Block{timestamp: to_string(DateTime.utc_now()),list: new_list, prev_hash: last_block.this_hash}
+    thisBlock = %Block{timestamp: DateTime.utc_now(),list: new_list, prev_hash: last_block.this_hash}
     hash  = gen_hash(thisBlock)
     [result , answer] = hashGen(hash ,5)
     thisBlock = %{thisBlock | nonce: answer, this_hash: result}
@@ -170,7 +170,7 @@ defmodule Project4 do
     list = Enum.reduce(transac_list,"", fn x,acc ->
     acc <> x.from<>x.to<>to_string(x.amount)
     end )
-    data = list <> block.timestamp <> block.prev_hash
+    data = list <> to_string(block.timestamp) <> block.prev_hash
     hash = :crypto.hash(:sha256,data)|>Base.encode16()
     hash
   end
@@ -258,7 +258,7 @@ defmodule Project4 do
       transac
       # IO.inspect transac
     end)
-    genesis_block = %Block{timestamp: to_string(DateTime.utc_now()),list: initial_list, prev_hash: "0", nonce: "00000000000000"}
+    genesis_block = %Block{timestamp: DateTime.utc_now(),list: initial_list, prev_hash: "0", nonce: "00000000000000"}
     # hash = gen_hash(genesis_block)
     genesis_block = %{genesis_block | this_hash: "000000000000000"}
     # IO.inspect genesis_block
@@ -297,6 +297,16 @@ defmodule Project4 do
         true ->
           acc
       end
+    end)
+    block_balance
+  end
+
+  def getBlockBalance(block) do
+    transac_list  = block.list
+    block_balance = Enum.reduce(transac_list, 0, fn x, acc->
+      amt = x.amount
+      # if x.from != "0" do
+      acc + amt
     end)
     block_balance
   end
@@ -358,7 +368,12 @@ defmodule Project4 do
     last_block = Enum.at(chain,-1)
     new_chain =
       if block.prev_hash == "0" or block.prev_hash == last_block.this_hash do
-        node = %{value: length(block.list)}
+        curr_time = DateTime.utc_now()
+        rew_transac = Enum.find(block.list, fn x-> x.from == "0" end)
+        reward = rew_transac.amount
+        amount_transacted = getBlockBalance(block)
+        diff = DateTime.diff(curr_time,block.timestamp, :millisecond)
+        node = %{value: length(block.list), time_taken: diff , transacted_amt: amount_transacted, rew: reward}
         IO.inspect node
         BitcoinWeb.Endpoint.broadcast!("room:lobby", "new_message", node)
         chain ++ [block]
