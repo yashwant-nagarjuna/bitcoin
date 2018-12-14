@@ -14,7 +14,7 @@ No. of Group member(s): 2 <br/> </p>
 * Visit [`localhost:4000`](http://localhost:4000)
 * Reload the browser.
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+<!-- Now you can visit [`localhost:4000`](http://localhost:4000) from your browser. -->
 
 <!-- Ready to run /in production? Please [check our deployment guides](https://hexdocs.pm/phoenix -->
 
