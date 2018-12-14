@@ -44,21 +44,15 @@ defmodule Project4 do
 
   def start_bitcoin(pids,table,block_chain,iterator) do
     if iterator > 0 do 
-      # a = Enum.random(pids)
-      # b = Enum.random(List.delete(pids,a))
-      # create_transaction(a,b,Enum.random(10..100))
-      # user_1 = Kernel.inspect(a)
-      # user_2 = Kernel.inspect(b)
-      # IO.puts "before...."
-      # IO.puts "user 1 balance : #{get_acc_balance(getID(a),block_chain)}"
-      # IO.puts "user 2 balance : #{get_acc_balance(getID(b),block_chain)}"
       create_transaction(pids,block_chain,Enum.random(1..50))
       mine_transactions(block_chain,pids)
-      IO.inspect iterator
-      IO.inspect is_BlockChain_valid(block_chain)
-      # IO.puts "after..."
-      # IO.puts "user 1 balance : #{get_acc_balance(getID(a),block_chain)}"
-      # IO.puts "user 2 balance : #{get_acc_balance(getID(b),block_chain)}"
+      # IO.inspect iterator
+      
+      balances = getBalanceNodes(pids,block_chain)
+      balance = makeMap(balances)
+      IO.puts "balance of all nodes:"
+      IO.inspect balance
+  
       start_bitcoin(pids,table,block_chain,iterator-1)
     end
   end
@@ -77,6 +71,28 @@ defmodule Project4 do
       add_transaction(transac,block_chain)
       create_transaction(pids,block_chain,times-1)
     end
+  end
+
+  def mine_transactions(block_chain,pids) do
+    list = get_pending_transac(block_chain)
+    Enum.each(pids, fn x ->
+    GenServer.cast(x,{:mine,[list,block_chain,x]})
+    end)
+  end
+
+  def getBalanceNodes(nodes,block_chain) do
+    balances = Enum.map(nodes, fn x ->
+      pubKey = getID(x)
+      get_acc_balance(pubKey,block_chain)
+    end)
+    balances
+  end
+
+  def makeMap(balances) do
+    numbers = 1..length(balances)
+    id = Enum.to_list(numbers)
+    b= %{id: id, bal: balances}
+    b
   end
 
   def createNodes(numNodes) do
@@ -109,12 +125,7 @@ defmodule Project4 do
     end)
   end
 
-  def mine_transactions(block_chain,pids) do
-    list = get_pending_transac(block_chain)
-    Enum.each(pids, fn x ->
-    GenServer.cast(x,{:mine,[list,block_chain,x]})
-    end)
-  end
+
 
   def get_pending_transac(block_chain) do
     GenServer.call(block_chain,{:getPendingTransacs})
@@ -148,8 +159,9 @@ defmodule Project4 do
       else
         curr_list
       end
+    amt = :rand.uniform()
     last_block = get_last_block(block_chain)
-    new_transac = %Transaction{from: "0", to: pub, amount: Enum.random(3..5) , timestamp: to_string(DateTime.utc_now())}
+    new_transac = %Transaction{from: "0", to: pub, amount: amt , timestamp: to_string(DateTime.utc_now())}
     new_list = transac_list ++ [new_transac]
     thisBlock = %Block{timestamp: DateTime.utc_now(),list: new_list, prev_hash: last_block.this_hash}
     hash  = gen_hash(thisBlock)
@@ -370,11 +382,21 @@ defmodule Project4 do
       if block.prev_hash == "0" or block.prev_hash == last_block.this_hash do
         curr_time = DateTime.utc_now()
         rew_transac = Enum.find(block.list, fn x-> x.from == "0" end)
-        reward = rew_transac.amount
-        amount_transacted = getBlockBalance(block)
+        reward = 
+          if block.this_hash != "000000000000000" do
+            rew_transac.amount
+          else
+            0
+          end
+        amount_transacted = 
+          if block.this_hash != "000000000000000" do
+            getBlockBalance(block)
+          else
+            0
+          end
         diff = DateTime.diff(curr_time,block.timestamp, :millisecond)
         node = %{value: length(block.list), time_taken: diff , transacted_amt: amount_transacted, rew: reward}
-        IO.inspect node
+        # IO.inspect node
         BitcoinWeb.Endpoint.broadcast!("room:lobby", "new_message", node)
         chain ++ [block]
       else
