@@ -20,7 +20,10 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
 * Implemented the distributed protocol
 * Simulated bitcoin for 100 nodes
-* Charts on the web interface
+* Time taken to mine each block.
+* Transaction amount in each block.
+* Statistics on the total bitcoin gained by mining
+* Total amount of bitcoin transacted till now. (Transactions are random)
 
 ## Test cases
 
