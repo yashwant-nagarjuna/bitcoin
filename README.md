@@ -1,10 +1,7 @@
 <h2 align = "center">  COP5615:    DISTRIBUTED OPERATING SYSTEMS </h2>
 <h2 align = "center" > Project-4.2 </h2>
 
-<p> <b>Submitted by: </b> <br/>
-Student Name: Yashwant Nagarjuna Kuppa <br/>
-Student Name: Mokal Pranav <br/>
-No. of Group member(s): 2 <br/> </p>
+
 
 
 ## Running the project
